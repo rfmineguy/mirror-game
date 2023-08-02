@@ -36,6 +36,24 @@ int main() {
       if (IsKeyPressed(KEY_M)) {
         printf("Saving boundary layout\n");
       }
+      if (IsKeyPressed(KEY_N)) {
+        if (setup.boundary_count + 1 < 7) {
+          setup.boundary_count ++;
+          setup.boundaries[setup.boundary_count - 1] = ml_new_boundary(300, 200, 300, 400, REFLECT, MOVABLE);
+        }
+      }
+    }
+
+    // Control intructions
+    {
+      int width = MeasureText("WASD: Move source", 20);
+      DrawText("WASD: Move source", 600 - width, 40, 20, WHITE);
+
+      width = MeasureText("Mouse: Change direction", 20);
+      DrawText("Mouse: Change direction", 600 - width, 70, 20, WHITE);
+
+      width = MeasureText("N: Spawn boundary", 20);
+      DrawText("N: Spawn boundary", 600 - width, 100, 20, WHITE);
     }
 
     // Setup initial ray for the simulation

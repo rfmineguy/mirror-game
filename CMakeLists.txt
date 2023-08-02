@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 project(mirrors LANGUAGES C)
+# project(mirrors-editor LANGUAGES C CXX)
 
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
@@ -14,4 +15,4 @@ target_include_directories(mirrorlib PRIVATE ${raylib_INCLUDE_DIR})
 
 add_executable(mirrors src/main.c)
 target_link_libraries(mirrors PRIVATE raylib mirrorlib)
-target_include_directories(mirrors PRIVATE ${raylib_INCLUDE_DIR})
+target_include_directories(mirrors PRIVATE ${raylib_INCLUDE_DIR} ${rimgui_INCLUDE_DIR})
