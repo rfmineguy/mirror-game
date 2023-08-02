@@ -39,7 +39,7 @@ void ml_run(mirror_lib_setup_t* setup, ray_ll_t* rays) {
 
   ray_t* temp = rays->header->next;
   int ll_depth = 0;
-#define MAX_DEPTH 1
+#define MAX_DEPTH 20
   while (temp && temp != rays->trailer && ll_depth < MAX_DEPTH) {
     int closest_boundary = -1;
     int closest_distance = INT_MAX;
@@ -104,10 +104,13 @@ void ml_run(mirror_lib_setup_t* setup, ray_ll_t* rays) {
         ml_ray_update_xy(temp, closest_point.x, closest_point.y);
         temp = temp->next;
       }
+      ll_depth ++;
       continue;
     }
     temp = temp->next;
-    ll_depth ++;
+    if (ll_depth >= MAX_DEPTH) {
+      break;
+    }
   }
 }
 
