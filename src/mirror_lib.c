@@ -17,16 +17,18 @@ ray_ll_t ml_ll_new() {
 void ml_ll_free(ray_ll_t ll) {
   ray_t* t = ll.header;
   while (t) {
-    ray_t* temp = t->next;
-    free(t);
-    t = temp;
-    }
+    ray_t* node = t;
+    t = node->next;
+    free(node);
+  }
 }
 
 void ml_ll_append(ray_ll_t ll, ray_t* ray) {
   ray_t* prev = ll.trailer->prev;
   prev->next = ray;
   ll.trailer->prev = ray;
+  ray->next = ll.trailer;
+  ray->prev = prev;
 }
 
 void ml_run(mirror_lib_setup_t* setup, ray_ll_t* rays) {
@@ -46,7 +48,7 @@ void ml_run(mirror_lib_setup_t* setup, ray_ll_t* rays) {
       Vector2 point;
       if (ml_ray_boundary_intersection(*temp, boundaries[i], &point)) {
         int dist_sq = (temp->origin.x - point.x) * (temp->origin.x - point.x) + (temp->origin.y - point.y) * (temp->origin.y - point.y);
-        if (dist_sq > 100 && dist_sq < closest_distance) {
+        if (dist_sq > 50 && dist_sq < closest_distance) {
           closest_distance = dist_sq;
           closest_boundary = i;
           closest_point = point;
@@ -75,7 +77,7 @@ void ml_run(mirror_lib_setup_t* setup, ray_ll_t* rays) {
       // DrawLineEx(closest_point, boundary_normal_p, 5, GREEN);
 
       int dist = sqrt((temp->origin.x - closest_point.x) * (temp->origin.x - closest_point.x) + (temp->origin.y - closest_point.y) * (temp->origin.y - closest_point.y));
-      printf("%d\n", dist);
+
       // Calculating the reflection
       //    I - 2 * (N.I) * N
       Vector2 I = temp->direction;
