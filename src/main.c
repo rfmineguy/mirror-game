@@ -10,17 +10,11 @@ int main() {
   Vector2 ray_origin = {0};
   mirror_lib_setup_t setup = {0};
   setup.boundaries = malloc(7 * sizeof(boundary_t));
-  setup.boundary_count = 3;
-  // setup.boundaries[0] = ml_new_boundary(90,  40, 100, 100);
-  // setup.boundaries[1] = ml_new_boundary(140, 100, 200, 160);
-  // setup.boundaries[2] = ml_new_boundary(260, 100, 300, 180);
-  // setup.boundaries[3] = ml_new_boundary(260, 120, 300, 200);
-  // setup.boundaries[4] = ml_new_boundary(260, 140, 300, 220);
-  // setup.boundaries[5] = ml_new_boundary(260, 160, 300, 240);
-  // setup.boundaries[6] = ml_new_boundary(300, 100, 430, 100);
-  setup.boundaries[0] = ml_new_boundary(1, 0, 1, 600, REFLECT);
-  setup.boundaries[1] = ml_new_boundary(1, 550, 550, 550, REFLECT);
-  setup.boundaries[2] = ml_new_boundary(200, 200, 400, 400, REFLECT);
+  setup.boundary_count = 4;
+  setup.boundaries[0] = ml_new_boundary(1, 0, 1, 600, REFLECT, MOVABLE);
+  setup.boundaries[1] = ml_new_boundary(1, 550, 550, 550, REFLECT, MOVABLE);
+  setup.boundaries[2] = ml_new_boundary(200, 200, 400, 400, ABSORB, STATIC);
+  setup.boundaries[3] = ml_new_boundary(100, 200, 200, 200, ABSORB, STATIC);
 
   // ray_ll_t rays_2 = ml_ll_new();
   // ml_ll_append(rays_2, ml_new_ray(0, 0, Vector2Zero(), 100));
@@ -33,18 +27,24 @@ int main() {
   while (!WindowShouldClose()) {
     ml_boundary_edit(&setup);
 
-    if (IsKeyDown(KEY_S)) ray_origin.y ++;
-    if (IsKeyDown(KEY_W)) ray_origin.y --;
-    if (IsKeyDown(KEY_D)) ray_origin.x ++;
-    if (IsKeyDown(KEY_A)) ray_origin.x --;
+    // Keyboard input
+    {
+      if (IsKeyDown(KEY_S)) ray_origin.y ++;
+      if (IsKeyDown(KEY_W)) ray_origin.y --;
+      if (IsKeyDown(KEY_D)) ray_origin.x ++;
+      if (IsKeyDown(KEY_A)) ray_origin.x --;
+      if (IsKeyPressed(KEY_M)) {
+        printf("Saving boundary layout\n");
+      }
+    }
 
     // Setup initial ray for the simulation
     rays = ml_ll_new();
+
     ray_t* r = ml_new_ray(ray_origin.x, ray_origin.y, Vector2Zero(), 100);
     ml_ray_update_xy(r, GetMousePosition().x, GetMousePosition().y);
-    ml_ll_append(rays, r);
+    ml_ll_append(&rays, r);
 
-    // Run the reflection simulation, and modifiy the rays linked list (this will contain all the reflected rays in it)
     ml_run(&setup, &rays);
 
     BeginDrawing();
@@ -56,6 +56,8 @@ int main() {
       DrawLineEx(temp->origin, temp->endp, 2, PINK);
       temp = temp->next;
     }
+    printf("%zu\n", rays.size);
+    DrawText(TextFormat("# of rays: %zu", rays.size), 400, 10, 20, WHITE);
 
     EndDrawing();
 

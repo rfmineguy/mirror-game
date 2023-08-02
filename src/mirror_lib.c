@@ -11,6 +11,7 @@ ray_ll_t ml_ll_new() {
   ll.trailer = calloc(1, sizeof(ray_t));
   ll.header->next = ll.trailer;
   ll.trailer->prev = ll.header;
+  ll.size = 0;
   return ll;
 }
 
@@ -26,28 +27,32 @@ void ml_ll_free(ray_ll_t ll) {
   }
 }
 
-void ml_ll_append(ray_ll_t ll, ray_t* ray) {
-  ray_t* prev = ll.trailer->prev;
+void ml_ll_append(ray_ll_t* ll, ray_t* ray) {
+  ray_t* prev = ll->trailer->prev;
   prev->next = ray;
-  ll.trailer->prev = ray;
-  ray->next = ll.trailer;
+  ll->trailer->prev = ray;
+  ray->next = ll->trailer;
   ray->prev = prev;
+  ll->size ++;
 }
 
 void ml_run(mirror_lib_setup_t* setup, ray_ll_t* rays) {
   boundary_t *boundaries = setup->boundaries;
+  for (int i = 0; i < setup->boundary_count; i++) {
+    setup->boundaries[i].was_hit = 0;
+  }
 
   ray_t* temp = rays->header->next;
   int ll_depth = 0;
 #define MAX_DEPTH 20
-  while (temp && temp != rays->trailer && ll_depth < MAX_DEPTH) {
+  while (temp && temp != rays->trailer && ll_depth + 1 < MAX_DEPTH) {
     int closest_boundary = -1;
     int closest_distance = INT_MAX;
     Vector2 closest_point;
     int hit = 0;
     for (int i = 0; i < setup->boundary_count; i++) {
       setup->boundaries[closest_boundary].was_hit = 0;
-      DrawLineEx(boundaries[i].p1, boundaries[i].p2, 5, BLUE);
+      // DrawLineEx(boundaries[i].p1, boundaries[i].p2, 5, BLUE);
       // DrawLineEx(boundaries[i].p1, boundaries[i].normal, 2, YELLOW);
       Vector2 point;
       if (ml_ray_boundary_intersection(*temp, boundaries[i], &point)) {
@@ -95,7 +100,7 @@ void ml_run(mirror_lib_setup_t* setup, ray_ll_t* rays) {
         // Generate new ray
         ray_t* r = ml_new_ray(closest_point.x, closest_point.y, reflect, 1000);
         ml_ray_update_xy(r, reflect.x, reflect.y);
-        ml_ll_append(*rays, r);
+        ml_ll_append(rays, r);
         ml_ray_update_xy(temp, closest_point.x, closest_point.y);
         temp = temp->next;
       }
@@ -112,10 +117,24 @@ void ml_run(mirror_lib_setup_t* setup, ray_ll_t* rays) {
       break;
     }
   }
+
+  for (int i = 0; i < setup->boundary_count; i++) {
+    boundary_t *b = &setup->boundaries[i];
+    Color c;
+    if (b->was_hit) {
+      c = GREEN;
+    }
+    else {
+      c = RED;
+    }
+    DrawLineEx(boundaries[i].p1, boundaries[i].p2, 5, c);
+  }
 }
 
 void ml_boundary_edit(mirror_lib_setup_t* setup) {
   for (int i = 0; i < setup->boundary_count; i++) {
+    if (setup->boundaries[i].movable == STATIC)
+      continue;
     Vector2 mouse = GetMousePosition();
     Vector2 p1    = setup->boundaries[i].p1;
     Vector2 p2    = setup->boundaries[i].p2;
@@ -172,13 +191,14 @@ void ml_ray_update_length(ray_t* ray, int length) {
   ray->endp.y = ray->origin.y + ray->direction.y * length;
 }
 
-boundary_t ml_new_boundary(float x1, float y1, float x2, float y2, boundary_type_e type) {
+boundary_t ml_new_boundary(float x1, float y1, float x2, float y2, boundary_type_e type, boundary_movable_e movable) {
   boundary_t b = {0};
   b.p1.x = x1;
   b.p1.y = y1;
   b.p2.x = x2;
   b.p2.y = y2;
   b.type = type;
+  b.movable = movable;
   float dx = b.p2.x - b.p1.x;
   float dy = b.p2.y - b.p1.y;
   b.normal = (Vector2) {.x=x1 + dy / 4.f, .y=y1 - dx / 4.f};
