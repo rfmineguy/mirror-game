@@ -5,9 +5,15 @@
 
 typedef struct ray_t ray_t;
 
+typedef enum {
+  REFLECT, ABSORB
+} boundary_type_e;
+
 typedef struct {
   Vector2 p1, p2;
   Vector2 normal;
+  int was_hit;
+  boundary_type_e type;
 } boundary_t;
 
 struct ray_t {
@@ -35,8 +41,9 @@ void     ml_run(mirror_lib_setup_t*, ray_ll_t*);
 
 ray_t*   ml_new_ray(float ox, float oy, Vector2 direction, float mag);
 void     ml_ray_update_xy(ray_t*, int, int);
+void     ml_ray_update_length(ray_t*, int);
 
-boundary_t    ml_new_boundary(float, float, float, float);
+boundary_t    ml_new_boundary(float, float, float, float, boundary_type_e);
 int           ml_ray_boundary_intersection(ray_t, boundary_t, Vector2*);
 
 Vector2       ml_reflect(Vector2, Vector2);
