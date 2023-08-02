@@ -111,6 +111,40 @@ void ml_run(mirror_lib_setup_t* setup, ray_ll_t* rays) {
   }
 }
 
+void ml_boundary_edit(mirror_lib_setup_t* setup) {
+  for (int i = 0; i < setup->boundary_count; i++) {
+    Vector2 mouse = GetMousePosition();
+    Vector2 p1    = setup->boundaries[i].p1;
+    Vector2 p2    = setup->boundaries[i].p2;
+
+    // dist between mouse and p1
+    int dist_sq = (mouse.x - p1.x) * (mouse.x - p1.x) + (mouse.y - p1.y) * (mouse.y - p1.y);
+    if (dist_sq < 100) {
+      DrawCircleV(p1, 10, GREEN);
+      if (IsMouseButtonDown(0)) {
+        setup->boundaries[i].p1.x = GetMouseX();
+        setup->boundaries[i].p1.y = GetMouseY();
+      }
+    }
+    else {
+      DrawCircleV(p1, 10, RED);
+    }
+
+    // dist between mouse and p2
+    dist_sq = (mouse.x - p2.x) * (mouse.x - p2.x) + (mouse.y - p2.y) * (mouse.y - p2.y);
+    if (dist_sq < 100) {
+      DrawCircleV(p2, 10, GREEN);
+      if (IsMouseButtonDown(0)) {
+        setup->boundaries[i].p2.x = GetMouseX();
+        setup->boundaries[i].p2.y = GetMouseY();
+      }
+    }
+    else {
+      DrawCircleV(p2, 10, RED);
+    }
+  }
+}
+
 ray_t* ml_new_ray(float ox, float oy, Vector2 direction, float mag) {
   ray_t* r = malloc(sizeof(ray_t));
   r->origin.x = ox;

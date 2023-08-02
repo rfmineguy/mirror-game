@@ -31,6 +31,8 @@ int main() {
 
   ray_ll_t rays;
   while (!WindowShouldClose()) {
+    ml_boundary_edit(&setup);
+
     if (IsKeyDown(KEY_S)) ray_origin.y ++;
     if (IsKeyDown(KEY_W)) ray_origin.y --;
     if (IsKeyDown(KEY_D)) ray_origin.x ++;
@@ -62,15 +64,11 @@ int main() {
     if (setup.boundaries[1].was_hit) {
       int width = MeasureText("You win!", 30);
       DrawText("You win!", (600 / 2) - (width / 2), 20, 30, BLUE);
-      // printf("\rYou win!           ");
-      // fflush(stdout);
       setup.boundaries[1].was_hit = 0;
     }
     else {
       int width = MeasureText("You lose!", 30);
       DrawText("You lose!", (600 / 2) - (width / 2), 20, 30, BLUE);
-      // printf("\rYou dont win yet!");
-      // fflush(stdout);
     }
   }
   ml_ll_free(rays);
