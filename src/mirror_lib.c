@@ -88,20 +88,20 @@ void ml_run(mirror_lib_setup_t* setup, ray_ll_t* rays) {
       Vector2 I = temp->direction;
       Vector2 N = boundary_normal;
       Vector2 I_mid_N = ml_reflect(I, N);
+      I_mid_N = Vector2Scale(I_mid_N, 5);
       Vector2 reflect = Vector2Add(I_mid_N, closest_point);
 
       if (boundary.type == REFLECT) {
-        printf("Reflection: %d\n", closest_boundary);
         // Generate new ray
         ray_t* r = ml_new_ray(closest_point.x, closest_point.y, reflect, 1000);
         ml_ray_update_xy(r, reflect.x, reflect.y);
         ml_ll_append(*rays, r);
         ml_ray_update_xy(temp, closest_point.x, closest_point.y);
-        // ml_ray_update_length(temp, 1000);
         temp = temp->next;
       }
       else {
         DrawCircleV(closest_point, 5, GREEN);
+        ml_ray_update_xy(temp, closest_point.x, closest_point.y);
         temp = temp->next;
       }
       continue;

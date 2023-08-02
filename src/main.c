@@ -10,7 +10,7 @@ int main() {
   Vector2 ray_origin = {0};
   mirror_lib_setup_t setup = {0};
   setup.boundaries = malloc(7 * sizeof(boundary_t));
-  setup.boundary_count = 2;
+  setup.boundary_count = 3;
   // setup.boundaries[0] = ml_new_boundary(90,  40, 100, 100);
   // setup.boundaries[1] = ml_new_boundary(140, 100, 200, 160);
   // setup.boundaries[2] = ml_new_boundary(260, 100, 300, 180);
@@ -19,7 +19,8 @@ int main() {
   // setup.boundaries[5] = ml_new_boundary(260, 160, 300, 240);
   // setup.boundaries[6] = ml_new_boundary(300, 100, 430, 100);
   setup.boundaries[0] = ml_new_boundary(1, 0, 1, 600, REFLECT);
-  setup.boundaries[1] = ml_new_boundary(1, 599, 599, 599, ABSORB);
+  setup.boundaries[1] = ml_new_boundary(1, 550, 550, 550, REFLECT);
+  setup.boundaries[2] = ml_new_boundary(200, 200, 400, 400, REFLECT);
 
   // ray_ll_t rays_2 = ml_ll_new();
   // ml_ll_append(rays_2, ml_new_ray(0, 0, Vector2Zero(), 100));
