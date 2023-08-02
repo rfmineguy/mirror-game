@@ -1,7 +1,9 @@
 #include "mirror_lib.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <math.h>
 #include <raymath.h>
+#include <limits.h>
 
 ray_ll_t ml_ll_new() {
   ray_ll_t ll = {0};
@@ -27,8 +29,71 @@ void ml_ll_append(ray_ll_t ll, ray_t* ray) {
   ll.trailer->prev = ray;
 }
 
-void ml_run(mirror_lib_setup_t* setup, ray_ll_t* out_ll) {
+void ml_run(mirror_lib_setup_t* setup, ray_ll_t* rays) {
+  boundary_t *boundaries = setup->boundaries;
 
+  ray_t* temp = rays->header->next;
+  int ll_depth = 0;
+#define MAX_DEPTH 1
+  while (temp && temp != rays->trailer && ll_depth < MAX_DEPTH) {
+    int closest_boundary = -1;
+    int closest_distance = INT_MAX;
+    Vector2 closest_point;
+    int hit = 0;
+    for (int i = 0; i < setup->boundary_count; i++) {
+      DrawLineEx(boundaries[i].p1, boundaries[i].p2, 5, BLUE);
+      DrawLineEx(boundaries[i].p1, boundaries[i].normal, 2, YELLOW);
+      Vector2 point;
+      if (ml_ray_boundary_intersection(*temp, boundaries[i], &point)) {
+        int dist_sq = (temp->origin.x - point.x) * (temp->origin.x - point.x) + (temp->origin.y - point.y) * (temp->origin.y - point.y);
+        if (dist_sq > 100 && dist_sq < closest_distance) {
+          closest_distance = dist_sq;
+          closest_boundary = i;
+          closest_point = point;
+          hit = 1;
+        }
+      }
+    }
+    if (hit) {
+      boundary_t boundary = boundaries[closest_boundary];
+      float dx = boundary.p2.x - boundary.p1.x;
+      float dy = boundary.p2.y - boundary.p1.y;
+      float m = dy / dx;
+      float b = boundary.p1.y - m * boundary.p1.x;
+      // y = m*x + b
+      Vector2 boundary_normal;// = (Vector2) {.x = dy, .y = -dx};
+      if (temp->origin.y < m * temp->origin.x + b) {
+        boundary_normal = (Vector2) {.x = dy, .y = -dx};
+      }
+      else {
+        boundary_normal = (Vector2) {.x = -dy, .y = dx};
+      }
+
+      // Drawing the normal
+      // Vector2 boundary_normal_p = Vector2Add(closest_point, boundary_normal);
+      // DrawCircleV(closest_point, 5, RED);
+      // DrawLineEx(closest_point, boundary_normal_p, 5, GREEN);
+
+      int dist = sqrt((temp->origin.x - closest_point.x) * (temp->origin.x - closest_point.x) + (temp->origin.y - closest_point.y) * (temp->origin.y - closest_point.y));
+      printf("%d\n", dist);
+      // Calculating the reflection
+      //    I - 2 * (N.I) * N
+      Vector2 I = temp->direction;
+      Vector2 N = boundary_normal;
+      Vector2 I_mid_N = ml_reflect(I, N);
+      Vector2 reflect = Vector2Add(I_mid_N, closest_point);
+
+      // Generate new ray
+      ray_t* r = ml_new_ray(closest_point.x, closest_point.y, reflect, dist);
+      ml_ray_update_xy(r, reflect.x, reflect.y);
+      ml_ll_append(*rays, r);
+      ml_ray_update_xy(temp, closest_point.x, closest_point.y);
+      temp = temp->next;
+      continue;
+    }
+    temp = temp->next;
+    ll_depth ++;
+  }
 }
 
 ray_t* ml_new_ray(float ox, float oy, Vector2 direction, float mag) {
