@@ -110,9 +110,22 @@ ray_t* new_ray(float ox, float oy, Vector2 direction, float mag) {
   r->origin.y = oy;
   r->magnitude = mag;
   r->next = NULL;
+  r->direction = direction;
+
   //update_ray(r, angle);
   r->closest_hit_distance = INT_MAX;
   return r;
+}
+
+Vector2 reflect(Vector2 I, Vector2 N) {
+  N = Vector2Normalize(N);
+  float IdotN     = Vector2DotProduct(I, N);
+  float mid       = (IdotN / 1) * 2;
+  Vector2 mid_N   = Vector2Scale(N, mid);
+  Vector2 I_mid_N = Vector2Subtract(I, mid_N);
+  I_mid_N         = Vector2Normalize(I_mid_N);
+  I_mid_N         = Vector2Scale(I_mid_N, -300);
+  return I_mid_N;
 }
 
 // https://en.wikipedia.org/wiki/Line–line_intersection
@@ -120,11 +133,14 @@ int main() {
   InitWindow(600, 600, "Mirror Game");
   SetTargetFPS(60);
 
-  boundary_t boundaries[4];
+  boundary_t boundaries[7];
   boundaries[0] = new_boundary(90,  40, 100, 100);
   boundaries[1] = new_boundary(140,  100, 200, 160);
   boundaries[2] = new_boundary(260, 100, 300, 180);
-  boundaries[3] = new_boundary(300, 100, 430, 100);
+  boundaries[3] = new_boundary(260, 120, 300, 200);
+  boundaries[4] = new_boundary(260, 140, 300, 220);
+  boundaries[5] = new_boundary(260, 160, 300, 240);
+  boundaries[6] = new_boundary(300, 100, 430, 100);
   Vector2 ray_origin = {0};
 
   while (!WindowShouldClose()) {
@@ -141,7 +157,7 @@ int main() {
       ray_origin.x --;
     }
     ll_t rays = ll_new();
-    ray_t* r = new_ray(ray_origin.x, ray_origin.y, Vector2Zero(), 300);
+    ray_t* r = new_ray(ray_origin.x, ray_origin.y, Vector2Zero(), 100);
     // update_ray_xy(r, GetMousePosition().x, GetMousePosition().y);
     update_ray_xy(r, GetMousePosition().x, GetMousePosition().y);
     ll_append(rays, r);
@@ -151,12 +167,13 @@ int main() {
 
     ray_t* temp = rays.header->next;
     int ll_depth = 0;
-    while (temp && temp != rays.trailer) {
+#define MAX_DEPTH 1
+    while (temp && temp != rays.trailer && ll_depth < MAX_DEPTH) {
       int closest_boundary = -1;
       int closest_distance = INT_MAX;
       Vector2 closest_point;
       int hit = 0;
-      for (int i = 0; i < 4; i++) {
+      for (int i = 0; i < 7; i++) {
         DrawLineEx(boundaries[i].p1, boundaries[i].p2, 5, BLUE);
         DrawLineEx(boundaries[i].p1, boundaries[i].normal, 2, YELLOW);
         Vector2 point;
@@ -186,33 +203,28 @@ int main() {
         }
 
         // Drawing the normal
-        Vector2 boundary_normal_p = Vector2Add(closest_point, boundary_normal);
-        DrawCircleV(closest_point, 5, RED);
-        DrawLineEx(closest_point, boundary_normal_p, 5, GREEN);
+        // Vector2 boundary_normal_p = Vector2Add(closest_point, boundary_normal);
+        // DrawCircleV(closest_point, 5, RED);
+        // DrawLineEx(closest_point, boundary_normal_p, 5, GREEN);
 
+        int dist = sqrt((temp->origin.x - closest_point.x) * (temp->origin.x - closest_point.x) + (temp->origin.y - closest_point.y) * (temp->origin.y - closest_point.y));
+        printf("%d\n", dist);
         // Calculating the reflection
-        //  I - 2 * (N.I) * N
+        //    I - 2 * (N.I) * N
         Vector2 I = temp->direction;
         Vector2 N = boundary_normal;
-        N = Vector2Normalize(N);
-        float IdotN     = Vector2DotProduct(I, N);
-        float mid       = (IdotN / 1) * 2;
-        Vector2 mid_N   = Vector2Scale(N, mid);
-        Vector2 I_mid_N = Vector2Subtract(I, mid_N);
-        I_mid_N         = Vector2Normalize(I_mid_N);
-        I_mid_N         = Vector2Scale(I_mid_N, -300);
+        Vector2 I_mid_N = reflect(I, N);
         Vector2 reflect = Vector2Add(I_mid_N, closest_point);
 
-        // Use reflection to generate new ray
-        DrawLineEx(closest_point, reflect, 2, MAGENTA);
-        ray_t* r = new_ray(closest_point.x, closest_point.y, reflect, 300);
+        // Generate new ray
+        ray_t* r = new_ray(closest_point.x, closest_point.y, reflect, dist);
         update_ray_xy(r, reflect.x, reflect.y);
         ll_append(rays, r);
+        update_ray_xy(temp, closest_point.x, closest_point.y);
         temp = temp->next;
         continue;
       }
       temp = temp->next;
-      // printf("%p\n", temp);
       ll_depth ++;
     }
     temp = rays.header->next;
