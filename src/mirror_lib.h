@@ -6,7 +6,7 @@
 typedef struct ray_t ray_t;
 
 typedef enum {
-  REFLECT, ABSORB
+  REFLECT_OFF, REFLECT_THROUGH, ABSORB
 } boundary_type_e;
 
 typedef enum {
@@ -34,7 +34,7 @@ typedef struct {
 } ray_ll_t;
 
 typedef struct {
-  ray_t       ray_source;
+  Vector2     source_loc;
   boundary_t* boundaries;
   size_t      boundary_count;
 } mirror_lib_setup_t;
@@ -54,5 +54,8 @@ boundary_t    ml_new_boundary(float, float, float, float, boundary_type_e, bound
 int           ml_ray_boundary_intersection(ray_t, boundary_t, Vector2*);
 
 Vector2       ml_reflect(Vector2, Vector2);
+
+void     ml_save_setup(const char*, const mirror_lib_setup_t*);
+int      ml_load_setup(const char*, mirror_lib_setup_t*);
 
 #endif

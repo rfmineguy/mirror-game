@@ -1,0 +1,5 @@
+Format:
+  Setup:
+    boundary_count: sizeof(size_t) bytes
+    boundary: sizeof(boundary_t) * boundary_count
+    ray_source: sizeof(Vector2)

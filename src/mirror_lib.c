@@ -96,13 +96,16 @@ void ml_run(mirror_lib_setup_t* setup, ray_ll_t* rays) {
       I_mid_N = Vector2Scale(I_mid_N, 5);
       Vector2 reflect = Vector2Add(I_mid_N, closest_point);
 
-      if (boundary.type == REFLECT) {
+      if (boundary.type == REFLECT_OFF) {
         // Generate new ray
         ray_t* r = ml_new_ray(closest_point.x, closest_point.y, reflect, 1000);
         ml_ray_update_xy(r, reflect.x, reflect.y);
         ml_ll_append(rays, r);
         ml_ray_update_xy(temp, closest_point.x, closest_point.y);
         temp = temp->next;
+      }
+      else if (boundary.type == REFLECT_THROUGH) {
+        
       }
       else {
         DrawCircleV(closest_point, 5, GREEN);
@@ -235,4 +238,36 @@ Vector2 ml_reflect(Vector2 I, Vector2 N) {
   I_mid_N         = Vector2Normalize(I_mid_N);
   I_mid_N         = Vector2Scale(I_mid_N, -300);
   return I_mid_N;
+}
+
+void ml_save_setup(const char* filepath, const mirror_lib_setup_t* setup) {
+  FILE* f = fopen(filepath, "wb");
+  if (!f) {
+    fprintf(stderr, "ml_save_setup: Failed to open filepath '%s'\n", filepath);
+    return;
+  }
+
+  fwrite(&setup->boundary_count, sizeof(size_t), 1, f);
+  for (int i = 0; i < setup->boundary_count; i++) {
+    fwrite(&setup->boundaries[i], sizeof(boundary_t), 1, f);
+  }
+  fwrite(&setup->source_loc, sizeof(Vector2), 1, f);
+
+  fclose(f);
+}
+
+int ml_load_setup(const char* filepath, mirror_lib_setup_t* out_setup) {
+  FILE* f = fopen(filepath, "rb");
+  if (!f) {
+    fprintf(stderr, "ml_load_setup: Failed to open filepath '%s'\n", filepath);
+    return 0;
+  }
+
+  fread(&out_setup->boundary_count, sizeof(size_t), 1, f);
+  out_setup->boundaries = malloc(out_setup->boundary_count * sizeof(boundary_t));
+  for (int i = 0; i < out_setup->boundary_count; i++) {
+    fread(&out_setup->boundaries[i], sizeof(boundary_t), 1, f);
+  }
+  fread(&out_setup->source_loc, sizeof(Vector2), 1, f);
+  return 1;
 }

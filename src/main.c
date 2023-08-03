@@ -11,8 +11,8 @@ int main() {
   mirror_lib_setup_t setup = {0};
   setup.boundaries = malloc(7 * sizeof(boundary_t));
   setup.boundary_count = 4;
-  setup.boundaries[0] = ml_new_boundary(1, 0, 1, 600, REFLECT, MOVABLE);
-  setup.boundaries[1] = ml_new_boundary(1, 550, 550, 550, REFLECT, MOVABLE);
+  setup.boundaries[0] = ml_new_boundary(1, 0, 1, 600, REFLECT_OFF, MOVABLE);
+  setup.boundaries[1] = ml_new_boundary(1, 550, 550, 550, REFLECT_OFF, MOVABLE);
   setup.boundaries[2] = ml_new_boundary(200, 200, 400, 400, ABSORB, STATIC);
   setup.boundaries[3] = ml_new_boundary(100, 200, 200, 200, ABSORB, STATIC);
 
@@ -35,11 +35,18 @@ int main() {
       if (IsKeyDown(KEY_A)) ray_origin.x --;
       if (IsKeyPressed(KEY_M)) {
         printf("Saving boundary layout\n");
+        ml_save_setup("mlsave.msave", &setup);
+      }
+      if (IsKeyPressed(KEY_COMMA)) {
+        printf("Loading boundary layout\n");
+        if (!ml_load_setup("mlsave.msave", &setup)) {
+          fprintf(stderr, "Failed to open mlsave.msave\n");
+        }
       }
       if (IsKeyPressed(KEY_N)) {
         if (setup.boundary_count + 1 < 7) {
           setup.boundary_count ++;
-          setup.boundaries[setup.boundary_count - 1] = ml_new_boundary(300, 200, 300, 400, REFLECT, MOVABLE);
+          setup.boundaries[setup.boundary_count - 1] = ml_new_boundary(300, 200, 300, 400, REFLECT_OFF, MOVABLE);
         }
       }
     }
@@ -54,6 +61,12 @@ int main() {
 
       width = MeasureText("N: Spawn boundary", 20);
       DrawText("N: Spawn boundary", 600 - width, 100, 20, WHITE);
+
+      width = MeasureText("M: Save boundary layout (mlsave.msave)", 20);
+      DrawText("M: Save boundary layout (mlsave.msave)", 600 - width, 130, 20, WHITE);
+
+      width = MeasureText(",: Load boundary layout (mlsave.msave)", 20);
+      DrawText(",: Load boundary layout (mlsave.msave)", 600 - width, 160, 20, WHITE);
     }
 
     // Setup initial ray for the simulation
@@ -74,7 +87,6 @@ int main() {
       DrawLineEx(temp->origin, temp->endp, 2, PINK);
       temp = temp->next;
     }
-    printf("%zu\n", rays.size);
     DrawText(TextFormat("# of rays: %zu", rays.size), 400, 10, 20, WHITE);
 
     EndDrawing();
