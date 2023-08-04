@@ -34,19 +34,22 @@ int main() {
       if (IsKeyDown(KEY_D)) ray_origin.x ++;
       if (IsKeyDown(KEY_A)) ray_origin.x --;
       if (IsKeyPressed(KEY_M)) {
-        printf("Saving boundary layout\n");
         ml_save_setup("mlsave.msave", &setup);
+        printf("Saved boundary layout\n");
       }
       if (IsKeyPressed(KEY_L)) {
-        printf("Loading boundary layout\n");
         if (!ml_load_setup("mlsave.msave", &setup)) {
           fprintf(stderr, "Failed to open mlsave.msave\n");
         }
+        printf("Loaded boundary layout\n");
       }
       if (IsKeyPressed(KEY_N)) {
         if (setup.boundary_count + 1 < 7) {
           setup.boundary_count ++;
           setup.boundaries[setup.boundary_count - 1] = ml_new_boundary(300, 200, 300, 400, REFLECT_OFF, MOVABLE);
+        }
+        else {
+          fprintf(stderr, "Failed to create boundary, max number reached: 7\n");
         }
       }
     }
@@ -69,33 +72,45 @@ int main() {
       DrawText("L: Load boundary layout (mlsave.msave)", 600 - width, 160, 20, WHITE);
     }
 
-    // Setup initial ray for the simulation
+    // Create the ray linked list
+    //   This gets constructed and destroyed every frame (maybe not ideal?)
     rays = ml_ll_new();
 
-    ray_t* r = ml_new_ray(ray_origin.x, ray_origin.y, Vector2Zero(), 100);
-    ml_ray_update_xy(r, GetMousePosition().x, GetMousePosition().y);
-    ml_ll_append(&rays, r);
+    // Setup initial ray for the simulation
+    {
+      ray_t* r = ml_new_ray(ray_origin.x, ray_origin.y, Vector2Zero(), 100);
+      ml_ray_update_xy(r, GetMousePosition().x, GetMousePosition().y);
+      ml_ll_append(&rays, r);
+    }
 
+    // Run the simulation
     ml_run(&setup, &rays);
 
-    BeginDrawing();
-      ClearBackground(GRAY);
-      ml_show(&setup, &rays);
-      DrawText(TextFormat("# of rays: %zu", rays.size), 400, 10, 20, WHITE);
-    EndDrawing();
+    // Draw the 'game'
+    {
+      BeginDrawing();
+        ClearBackground(GRAY);
+        ml_show(&setup, &rays);
+        DrawText(TextFormat("# of rays: %zu", rays.size), 400, 10, 20, WHITE);
+      EndDrawing();
+    }
 
+    // Free the ray linked list
     ml_ll_free(rays);
 
     // Run "win" logic
-    if (setup.boundaries[1].was_hit) {
-      int width = MeasureText("You win!", 30);
-      DrawText("You win!", (600 / 2) - (width / 2), 20, 30, BLUE);
-      setup.boundaries[1].was_hit = 0;
-    }
-    else {
-      int width = MeasureText("You lose!", 30);
-      DrawText("You lose!", (600 / 2) - (width / 2), 20, 30, BLUE);
+    {
+      if (setup.boundaries[1].was_hit) {
+        int width = MeasureText("You win!", 30);
+        DrawText("You win!", (600 / 2) - (width / 2), 20, 30, BLUE);
+        setup.boundaries[1].was_hit = 0;
+      }
+      else {
+        int width = MeasureText("You lose!", 30);
+        DrawText("You lose!", (600 / 2) - (width / 2), 20, 30, BLUE);
+      }
     }
   }
+
   rays = (ray_ll_t){0};
 }
