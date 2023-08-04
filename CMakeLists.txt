@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 3.20)
 project(mirrors LANGUAGES C)
 # project(mirrors-editor LANGUAGES C CXX)
 
-set(CMAKE_BUILD_TYPE RelWithDebInfo)
+set(CMAKE_BUILD_TYPE Release)
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ggdb")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address")
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address")
 
 include(FetchContent)
 
