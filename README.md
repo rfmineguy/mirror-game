@@ -6,7 +6,7 @@ A simple library that simulates the way light reflects off of mirror surfaces me
 shell
 $ mkdir build
 $ cd build
-$ cmake .. -G Ninja
+$ cmake .. -DBUILD_EXECUTABLE=[ON/OFF]
 $ ninja
 ```
 The built example executable is `build/mirrors`

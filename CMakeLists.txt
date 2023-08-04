@@ -15,6 +15,8 @@ add_library(mirrorlib src/mirror_lib.c)
 target_link_libraries(mirrorlib PRIVATE raylib)
 target_include_directories(mirrorlib PRIVATE ${raylib_INCLUDE_DIR})
 
+if (BUILD_EXECUTABLE)
 add_executable(mirrors src/main.c)
 target_link_libraries(mirrors PRIVATE raylib mirrorlib)
 target_include_directories(mirrors PRIVATE ${raylib_INCLUDE_DIR} ${rimgui_INCLUDE_DIR})
+endif ()
