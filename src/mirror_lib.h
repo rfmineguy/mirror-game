@@ -46,6 +46,8 @@ void     ml_ll_append(ray_ll_t*, ray_t*);
 void     ml_run(mirror_lib_setup_t*, ray_ll_t*);
 void     ml_boundary_edit(mirror_lib_setup_t*);
 
+void     ml_show(const mirror_lib_setup_t*, const ray_ll_t*);
+
 ray_t*   ml_new_ray(float ox, float oy, Vector2 direction, float mag);
 void     ml_ray_update_xy(ray_t*, int, int);
 void     ml_ray_update_length(ray_t*, int);

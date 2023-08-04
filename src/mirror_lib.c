@@ -16,14 +16,12 @@ ray_ll_t ml_ll_new() {
 }
 
 void ml_ll_free(ray_ll_t ll) {
-  ray_t* t = ll.header;
-  while (t) {
-    ray_t* node = t;
-    t = node->next;
-    if (node) {
-      free(node);
-      node = NULL;
-    }
+  ray_t* r = ll.header;
+  while (r) {
+    ray_t* temp = r;
+    r = r->next;
+    free(temp);
+    temp = NULL;
   }
 }
 
@@ -38,20 +36,23 @@ void ml_ll_append(ray_ll_t* ll, ray_t* ray) {
 
 void ml_run(mirror_lib_setup_t* setup, ray_ll_t* rays) {
   boundary_t *boundaries = setup->boundaries;
+
+  // reset hit status of the boundaries
   for (int i = 0; i < setup->boundary_count; i++) {
     setup->boundaries[i].was_hit = 0;
   }
 
+  // begin looping over the rays
   ray_t* temp = rays->header->next;
   int ll_depth = 0;
 #define MAX_DEPTH 20
   while (temp && temp != rays->trailer && ll_depth + 1 < MAX_DEPTH) {
     int closest_boundary = -1;
     int closest_distance = INT_MAX;
-    Vector2 closest_point;
+    Vector2 closest_point = (Vector2) {0};
     int hit = 0;
     for (int i = 0; i < setup->boundary_count; i++) {
-      setup->boundaries[closest_boundary].was_hit = 0;
+      setup->boundaries[i].was_hit = 0;
       // DrawLineEx(boundaries[i].p1, boundaries[i].p2, 5, BLUE);
       // DrawLineEx(boundaries[i].p1, boundaries[i].normal, 2, YELLOW);
       Vector2 point;
@@ -120,18 +121,6 @@ void ml_run(mirror_lib_setup_t* setup, ray_ll_t* rays) {
       break;
     }
   }
-
-  for (int i = 0; i < setup->boundary_count; i++) {
-    boundary_t *b = &setup->boundaries[i];
-    Color c;
-    if (b->was_hit) {
-      c = GREEN;
-    }
-    else {
-      c = RED;
-    }
-    DrawLineEx(boundaries[i].p1, boundaries[i].p2, 5, c);
-  }
 }
 
 void ml_boundary_edit(mirror_lib_setup_t* setup) {
@@ -167,6 +156,26 @@ void ml_boundary_edit(mirror_lib_setup_t* setup) {
     else {
       DrawCircleV(p2, 10, RED);
     }
+  }
+}
+
+void ml_show(const mirror_lib_setup_t* setup, const ray_ll_t* rays) {
+  ray_t* temp = rays->header->next;
+  while (temp && temp != rays->trailer) {
+    DrawLineEx(temp->origin, temp->endp, 2, PINK);
+    temp = temp->next;
+  }
+  boundary_t *boundaries = setup->boundaries;
+  for (int i = 0; i < setup->boundary_count; i++) {
+    boundary_t *b = &setup->boundaries[i];
+    Color c;
+    if (b->was_hit) {
+      c = GREEN;
+    }
+    else {
+      c = RED;
+    }
+    DrawLineEx(boundaries[i].p1, boundaries[i].p2, 5, c);
   }
 }
 

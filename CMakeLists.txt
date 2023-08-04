@@ -3,6 +3,8 @@ project(mirrors LANGUAGES C)
 # project(mirrors-editor LANGUAGES C CXX)
 
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ggdb")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address")
 
 include(FetchContent)
 

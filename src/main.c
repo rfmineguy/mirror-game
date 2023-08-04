@@ -37,7 +37,7 @@ int main() {
         printf("Saving boundary layout\n");
         ml_save_setup("mlsave.msave", &setup);
       }
-      if (IsKeyPressed(KEY_COMMA)) {
+      if (IsKeyPressed(KEY_L)) {
         printf("Loading boundary layout\n");
         if (!ml_load_setup("mlsave.msave", &setup)) {
           fprintf(stderr, "Failed to open mlsave.msave\n");
@@ -66,7 +66,7 @@ int main() {
       DrawText("M: Save boundary layout (mlsave.msave)", 600 - width, 130, 20, WHITE);
 
       width = MeasureText(",: Load boundary layout (mlsave.msave)", 20);
-      DrawText(",: Load boundary layout (mlsave.msave)", 600 - width, 160, 20, WHITE);
+      DrawText("L: Load boundary layout (mlsave.msave)", 600 - width, 160, 20, WHITE);
     }
 
     // Setup initial ray for the simulation
@@ -79,20 +79,14 @@ int main() {
     ml_run(&setup, &rays);
 
     BeginDrawing();
-    ClearBackground(GRAY);
-
-    // Draw the resulting rays
-    ray_t* temp = rays.header->next;
-    while (temp && temp != rays.trailer) {
-      DrawLineEx(temp->origin, temp->endp, 2, PINK);
-      temp = temp->next;
-    }
-    DrawText(TextFormat("# of rays: %zu", rays.size), 400, 10, 20, WHITE);
-
+      ClearBackground(GRAY);
+      ml_show(&setup, &rays);
+      DrawText(TextFormat("# of rays: %zu", rays.size), 400, 10, 20, WHITE);
     EndDrawing();
 
     ml_ll_free(rays);
 
+    // Run "win" logic
     if (setup.boundaries[1].was_hit) {
       int width = MeasureText("You win!", 30);
       DrawText("You win!", (600 / 2) - (width / 2), 20, 30, BLUE);
@@ -103,5 +97,5 @@ int main() {
       DrawText("You lose!", (600 / 2) - (width / 2), 20, 30, BLUE);
     }
   }
-  ml_ll_free(rays);
+  rays = (ray_ll_t){0};
 }
