@@ -1,6 +1,6 @@
 # mirror-lib
 A simple library that simulates the way light reflects off of mirror surfaces meant to simple to use.
-[image](res/mirror_lib.png)
+![display](res/mirror_lib.png)
 
 # Building
 ```
