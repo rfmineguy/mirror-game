@@ -36,6 +36,7 @@ void ml_ll_append(ray_ll_t* ll, ray_t* ray) {
 
 void ml_run(mirror_lib_setup_t* setup, ray_ll_t* rays) {
   boundary_t *boundaries = setup->boundaries;
+  ml_ll_append(rays, setup->source_ray);
 
   // reset hit status of the boundaries
   for (int i = 0; i < setup->boundary_count; i++) {
@@ -186,6 +187,7 @@ ray_t* ml_new_ray(float ox, float oy, Vector2 direction, float mag) {
   r->magnitude = mag;
   r->next = NULL;
   r->direction = direction;
+  ml_ray_update_xy(r, ox, oy);
   return r;
 }
 
@@ -203,17 +205,27 @@ void ml_ray_update_length(ray_t* ray, int length) {
   ray->endp.y = ray->origin.y + ray->direction.y * length;
 }
 
-boundary_t ml_new_boundary(float x1, float y1, float x2, float y2, boundary_type_e type, boundary_movable_e movable) {
+void ml_source(mirror_lib_setup_t* setup, Vector2 origin, Vector2 direction) {
+  setup->source_ray = ml_new_ray(origin.x, origin.y, direction, 1000);
+  ml_ray_update_xy(setup->source_ray, GetMousePosition().x, GetMousePosition().y);
+}
+
+boundary_t ml_new_boundary(float x1, float y1, float x2, float y2, int sections, boundary_type_e type, boundary_movable_e movable) {
   boundary_t b = {0};
   b.p1.x = x1;
   b.p1.y = y1;
   b.p2.x = x2;
   b.p2.y = y2;
   b.type = type;
+  b.sections = sections;
   b.movable = movable;
   float dx = b.p2.x - b.p1.x;
   float dy = b.p2.y - b.p1.y;
   b.normal = (Vector2) {.x=x1 + dy / 4.f, .y=y1 - dx / 4.f};
+
+  float length = sqrt(dx*dx+dy*dy);
+  b.section_length = (int)(length / b.sections);
+
   return b;
 }
 
@@ -260,7 +272,7 @@ void ml_save_setup(const char* filepath, const mirror_lib_setup_t* setup) {
   for (int i = 0; i < setup->boundary_count; i++) {
     fwrite(&setup->boundaries[i], sizeof(boundary_t), 1, f);
   }
-  fwrite(&setup->source_loc, sizeof(Vector2), 1, f);
+  // fwrite(&setup->source_loc, sizeof(Vector2), 1, f);
 
   fclose(f);
 }
@@ -277,6 +289,6 @@ int ml_load_setup(const char* filepath, mirror_lib_setup_t* out_setup) {
   for (int i = 0; i < out_setup->boundary_count; i++) {
     fread(&out_setup->boundaries[i], sizeof(boundary_t), 1, f);
   }
-  fread(&out_setup->source_loc, sizeof(Vector2), 1, f);
+  // fread(&out_setup->source_loc, sizeof(Vector2), 1, f);
   return 1;
 }

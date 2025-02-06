@@ -16,7 +16,8 @@ typedef enum {
 typedef struct {
   Vector2 p1, p2;
   Vector2 normal;
-  int was_hit;
+  int was_hit, section_hit;
+  int sections, section_length;
   boundary_type_e type;
   boundary_movable_e movable;
 } boundary_t;
@@ -34,9 +35,10 @@ typedef struct {
 } ray_ll_t;
 
 typedef struct {
-  Vector2     source_loc;
+  ray_t*      source_ray;
   boundary_t* boundaries;
   size_t      boundary_count;
+  int         running;
 } mirror_lib_setup_t;
 
 ray_ll_t ml_ll_new();
@@ -52,7 +54,9 @@ ray_t*   ml_new_ray(float ox, float oy, Vector2 direction, float mag);
 void     ml_ray_update_xy(ray_t*, int, int);
 void     ml_ray_update_length(ray_t*, int);
 
-boundary_t    ml_new_boundary(float, float, float, float, boundary_type_e, boundary_movable_e);
+void     ml_source(mirror_lib_setup_t*, Vector2, Vector2);
+
+boundary_t    ml_new_boundary(float, float, float, float, int, boundary_type_e, boundary_movable_e);
 int           ml_ray_boundary_intersection(ray_t, boundary_t, Vector2*);
 
 Vector2       ml_reflect(Vector2, Vector2);

@@ -11,14 +11,10 @@ int main() {
   mirror_lib_setup_t setup = {0};
   setup.boundaries = malloc(7 * sizeof(boundary_t));
   setup.boundary_count = 4;
-  setup.boundaries[0] = ml_new_boundary(1, 0, 1, 600, REFLECT_OFF, MOVABLE);
-  setup.boundaries[1] = ml_new_boundary(1, 550, 550, 550, REFLECT_OFF, MOVABLE);
-  setup.boundaries[2] = ml_new_boundary(200, 200, 400, 400, ABSORB, STATIC);
-  setup.boundaries[3] = ml_new_boundary(100, 200, 200, 200, ABSORB, STATIC);
-
-  // ray_ll_t rays_2 = ml_ll_new();
-  // ml_ll_append(rays_2, ml_new_ray(0, 0, Vector2Zero(), 100));
-  // ml_ll_free(rays_2);
+  setup.boundaries[0] = ml_new_boundary(1, 0, 1, 600, 1, REFLECT_OFF, MOVABLE);
+  setup.boundaries[1] = ml_new_boundary(1, 550, 550, 550, 1, REFLECT_OFF, MOVABLE);
+  setup.boundaries[2] = ml_new_boundary(200, 200, 400, 400, 1, ABSORB, STATIC);
+  setup.boundaries[3] = ml_new_boundary(100, 200, 200, 200, 1, ABSORB, STATIC);
 
   InitWindow(600, 600, "Mirror Game");
   SetTargetFPS(60);
@@ -46,7 +42,7 @@ int main() {
       if (IsKeyPressed(KEY_N)) {
         if (setup.boundary_count + 1 < 7) {
           setup.boundary_count ++;
-          setup.boundaries[setup.boundary_count - 1] = ml_new_boundary(300, 200, 300, 400, REFLECT_OFF, MOVABLE);
+          setup.boundaries[setup.boundary_count - 1] = ml_new_boundary(300, 200, 300, 400, 5, REFLECT_OFF, MOVABLE);
         }
         else {
           fprintf(stderr, "Failed to create boundary, max number reached: 7\n");
@@ -76,17 +72,11 @@ int main() {
     //   This gets constructed and destroyed every frame (maybe not ideal?)
     rays = ml_ll_new();
 
-    // Setup initial ray for the simulation
-    {
-      ray_t* r = ml_new_ray(ray_origin.x, ray_origin.y, Vector2Zero(), 100);
-      ml_ray_update_xy(r, GetMousePosition().x, GetMousePosition().y);
-      ml_ll_append(&rays, r);
-    }
-
     // Run the simulation
+    ml_source(&setup, ray_origin, Vector2Zero());
     ml_run(&setup, &rays);
 
-    // Draw the 'game'
+    //Draw the 'game'
     {
       BeginDrawing();
         ClearBackground(GRAY);
